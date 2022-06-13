@@ -43,7 +43,7 @@ function SignIn() {
           <Link to='/forgotpassword' className='forgotPasswordLink'>Forgot Password</Link>
 
           <div className="signInBar">
-            <p className="singInText">
+            <p className="signInText">
               Sign In
             </p>
             <button className="signInButton">
