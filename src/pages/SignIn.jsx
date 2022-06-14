@@ -4,6 +4,7 @@ import { toast } from 'react-toastify';
 import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
 import {ReactComponent as ArrowRightIcon } from '../assets/svg/keyboardArrowRightIcon.svg';
 import visibilityIcon from '../assets/svg/visibilityIcon.svg';
+import OAuth from '../components/OAuth';
 
 function SignIn() {
   //state for if the user wants to show password or not
@@ -73,7 +74,8 @@ function SignIn() {
           </div>
         </form>
 
-        {/* Google OAuth */}
+        <OAuth />
+
         <Link to='/sign-up' className='registerLink'>Don't have an Account? Sign Up </Link>
       </div>
     </>
