@@ -2,6 +2,7 @@ import {BrowserRouter as Router, Routes, Route} from 'react-router-dom'
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css';
 import PrivateRoute from './components/PrivateRoute';
+import Category from './pages/Category';
 import Navbar from './components/Navbar'
 import Explore from './pages/Explore'
 import Offers from './pages/Offers'
@@ -18,9 +19,11 @@ function App() {
         <Routes>
           <Route path="/" element={<Explore />} />
           <Route path="/offers" element={<Offers />} />
+          {/* we have two categories avialable, rent or sell*/}
+          <Route path="/category/:categoryName" element={<Category />} />
           <Route path="/profile" element={<PrivateRoute />}>
             {/* this is what the Outlet in the PrivateRoute looks at */}
-            <Route path="/profile" element={<Profile />} /> 
+            <Route path="/profile" element={<Profile />} />
           </Route>
           <Route path="/sign-in" element={<SignIn />} />
           <Route path="/sign-up" element={<SignUp />} />
