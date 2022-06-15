@@ -2,87 +2,146 @@ import { useState, useEffect, useRef } from 'react'
 import {getAuth, onAuthStateChanged} from 'firebase/auth'
 import {useNavigate} from 'react-router-dom'
 import Spinner from '../components/Spinner'
+import {toast} from 'react-toastify'
 
 
 function CreateListing() {
-    const [geolocationEnabled, setGeolocationEnabled] = useState(true)
-    const [loading, setLoading] = useState(false)
-    const [formData, setFormData] = useState({
-        type: 'rent',
-        name: '',
-        bedrooms: 1,
-        bathrooms: 1,
-        parking: false,
-        furnished: false,
-        address: '',
-        offer: false,
-        regularPrice: 0,
-        discountedPrice: 0,
-        images: {},
-        latitude: 0,
-        longitude: 0,
-    })
+  // eslint-disable-next-line
+  const [geolocationEnabled, setGeolocationEnabled] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    type: 'rent',
+    name: '',
+    bedrooms: 1,
+    bathrooms: 1,
+    parking: false,
+    furnished: false,
+    address: '',
+    offer: false,
+    regularPrice: 0,
+    discountedPrice: 0,
+    images: {},
+    latitude: 0,
+    longitude: 0,
+  });
 
-    //Destructuring the formData object
-    const {name, type, bedrooms, bathrooms, parking, furnished, address, offer, regularPrice, discountedPrice, images, latitude, longitude} = formData
+  //Destructuring the formData object
+  const {
+    name,
+    type,
+    bedrooms,
+    bathrooms,
+    parking,
+    furnished,
+    address,
+    offer,
+    regularPrice,
+    discountedPrice,
+    images,
+    latitude,
+    longitude,
+  } = formData;
 
-    //
-    const auth = getAuth()
-    const navigate = useNavigate()
-    const isMounted = useRef(true)
+  //
+  const auth = getAuth();
+  const navigate = useNavigate();
+  const isMounted = useRef(true);
 
-    useEffect(() => {
-        if (isMounted) {
-            onAuthStateChanged(auth, (user) => {
-                if (user) {
-                    setFormData({...formData, userRef: user.uid})
-                } else {
-                    navigate('/sign-in')
-                }
-            })
+  useEffect(() => {
+    if (isMounted) {
+      onAuthStateChanged(auth, (user) => {
+        if (user) {
+          setFormData({ ...formData, userRef: user.uid });
+        } else {
+          navigate('/sign-in');
         }
-
-        return () => {
-            isMounted.current = false
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isMounted])
-
-    if(loading) {
-        return <Spinner />
+      });
     }
 
-    const onSubmit = (e) => {
-        e.preventDefault()
-        console.log(formData)
+    return () => {
+      isMounted.current = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isMounted]);
+
+  const onSubmit = async (e) => {
+    e.preventDefault();
+    console.log(formData)
+    setLoading(true);
+
+    if (discountedPrice >= regularPrice) {
+      setLoading(false);
+      toast.error('Discounted price must be less than regular price');
+      return;
     }
 
-    const onMutate = (e) => {
-        let boolean = null
-
-        if(e.target.value === 'true') {
-            boolean = true
-        }
-        if(e.target.value === 'false') {
-            boolean = false
-        }
-
-        // For Files
-        if(e.target.files) {
-            setFormData((prevState) => ({
-                ...prevState,
-                images: e.target.files
-            }))
-        }
-
-        //For text/boolean
-        if(!e.target.files) {
-            setFormData((prevState) => ({
-                ...prevState,
-                [e.target.id] : boolean ?? e.target.vale,
-            }))
-        }
+    if (images.length > 6) {
+      setLoading(false);
+      toast.error('Maximium of 6 images');
+      return;
     }
+
+    //Geolocation
+    let geolocation = {}
+    let location
+
+    if(geolocationEnabled) {
+
+        // need to add a key to the response, you can get it from console.cloud.google.com and save it in a .env file
+        const response = await fetch(`https://map.googleapis.com/maps/api/geocode/json?address=${address}&key=$`)
+
+        const data = await response.json()
+
+        geolocation.lat = data.results[0]?.geometry.location.lat ?? 0
+        geolocation.lng = data.results[0]?.geometry.location.lng ?? 0
+
+        location = data.status === 'ZERO_RESULTS' ? undefined : data.results[0]?.formatted_address
+
+        if(location === undefined || location.includes('undefined')) {
+            setLoading(false);
+            toast.error('Please enter a valid location');
+            return
+        }
+    } else {
+        geolocation.lat = latitude;
+        geolocation.lng = longitude;
+        location = address
+        console.log(geolocation, location);
+        setLoading(false);
+
+    }
+  };
+
+  const onMutate = (e) => {
+    let boolean = null;
+
+    if (e.target.value === 'true') {
+      boolean = true;
+    }
+    if (e.target.value === 'false') {
+      boolean = false;
+    }
+
+    // Files
+    if (e.target.files) {
+      setFormData((prevState) => ({
+        ...prevState,
+        images: e.target.files,
+      }));
+    }
+
+    // Text/Booleans/Numbers
+    if (!e.target.files) {
+      setFormData((prevState) => ({
+        ...prevState,
+        [e.target.id]: boolean ?? e.target.value,
+      }));
+    }
+  };
+  
+  if (loading) {
+    return <Spinner />;
+  }
   return (
     <div className="profile">
       <header>
