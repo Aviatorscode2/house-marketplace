@@ -6,6 +6,7 @@ import {
   uploadBytesResumable,
   getDownloadURL,
 } from 'firebase/storage';
+import {addDoc, collection, serverTimestamp} from 'firebase/firestore'
 import {db} from '../firebase.config'
 import {v4 as uuidv4} from 'uuid'
 import {useNavigate} from 'react-router-dom'
@@ -113,8 +114,8 @@ function CreateListing() {
     } else {
         geolocation.lat = latitude;
         geolocation.lng = longitude;
-        location = address
-        console.log(geolocation, location);
+        
+        // console.log(geolocation, location);
     }
 
     // Store images to firebase
@@ -157,7 +158,7 @@ function CreateListing() {
         })
     }
 
-    const imageUrls = await Promise.all(
+    const imgUrls = await Promise.all(
         [...images].map((image) => storeImage(image))
     ).catch(() => {
         setLoading(false);
@@ -165,7 +166,28 @@ function CreateListing() {
         return
     })
 
-    console.log(imageUrls)
+    
+    const formDataCopy = {
+        ...formData,
+        imgUrls,
+        geolocation,
+        timestamp: serverTimestamp()
+    }
+
+    // we want to delete the image and address from the formDataCopy object
+    formDataCopy.location = address
+    delete formDataCopy.images
+    delete formDataCopy.address
+    location && (formDataCopy.location = location)
+    !formDataCopy.offer &&  delete formDataCopy.discountedPrice
+
+    //Save to the database, 
+    const docRef = await addDoc(collection(db, 'listings'), formDataCopy)
+    setLoading(false);
+    toast.success('Listing added successfully')
+    navigate(`/category/${formDataCopy.type}/${docRef.id}`)
+
+
     setLoading(false);
   };
 
