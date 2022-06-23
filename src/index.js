@@ -6,9 +6,10 @@ import reportWebVitals from './reportWebVitals';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
-  <React.StrictMode>
+  // Deleted React.Strict mode to allow swiper.js work properly, it was affecting it
+  <>
     <App />
-  </React.StrictMode>
+  </>
 );
 
 // If you want to start measuring performance in your app, pass a function
