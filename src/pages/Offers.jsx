@@ -13,6 +13,7 @@ import { db } from '../firebase.config';
 import { toast } from 'react-toastify';
 import Spinner from '../components/Spinner';
 import ListingItem from '../components/ListingItem';
+import Slider from '../components/Slider';
 
 function Offers() {
   const [listings, setListings] = useState(null);
@@ -100,6 +101,7 @@ function Offers() {
       ) : listings && listings.length > 0 ? (
         <>
           <main>
+            <Slider />
             <ul className="categoryListings">
               {listings.map((listing) => (
                 <ListingItem
